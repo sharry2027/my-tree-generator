@@ -1,0 +1,36 @@
+name: Make Device Tree
+on:
+  workflow_dispatch:
+    inputs:
+      RECOVERY_URL:
+        description: 'Apni Hovatek Recovery.img ka Direct Link'
+        required: true
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-node: '3.10'
+
+    - name: Install twrpdtgen
+      run: |
+        sudo apt-get update && sudo apt-get install -y cpio
+        pip3 install twrpdtgen
+
+    - name: Download and Generate
+      run: |
+        wget -O recovery.img "${{ github.event.inputs.RECOVERY_URL }}"
+        python3 -m twrpdtgen recovery.img
+
+    - name: Upload Device Tree
+      uses: actions/upload-artifact@v4
+      with:
+        name: My-Device-Tree
+        path: output/
